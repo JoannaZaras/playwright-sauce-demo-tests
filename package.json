@@ -1,0 +1,27 @@
+{
+  "name": "playwright-sauce-demo-tests",
+  "version": "1.0.0",
+  "description": "Playwright TS tests of Sauce Labs ecommerce page",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JoannaZaras/playwright-sauce-demo-tests.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/JoannaZaras/playwright-sauce-demo-tests/issues"
+  },
+  "homepage": "https://github.com/JoannaZaras/playwright-sauce-demo-tests#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.0",
+    "playwright": "^1.58.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
