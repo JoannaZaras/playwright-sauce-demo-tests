@@ -1,73 +1,48 @@
-import { test, expect } from '@playwright/test';
-import LoginPage from '../pages/LoginPage';
-import users from '../data/users';
+import { test, expect } from '../fixtures/auth';
 import InventoryPage from '../pages/InventoryPage';
 import CartPage from '../pages/CartPage';
 import CheckoutPage from '../pages/CheckoutPage';
 
-let loginPage: LoginPage;
-let inventoryPage: InventoryPage;
-let cartPage: CartPage;
-let checkoutPage: CheckoutPage
+test('happy path E2E', async ({ loggedInPage }) => {
+  const product1 = 'Sauce Labs Fleece Jacket';
+  const product2 = 'Sauce Labs Bolt T-Shirt';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('https://www.saucedemo.com/');
-  loginPage = new LoginPage(page);
-  inventoryPage = new InventoryPage(page);
-  cartPage = new CartPage(page);
-  checkoutPage = new CheckoutPage(page);
-});
+  // --- Inventory ---
+  const inventoryPage = new InventoryPage(loggedInPage);
 
-test('verify e2e happy path', async ({ page }) => {
-  const productName1 = 'Sauce Labs Fleece Jacket';
-  const productName2 = 'Sauce Labs Bolt T-Shirt';
-  await loginPage.login(users.VALID_USER.username, users.VALID_USER.password);
+  // Assert inventory loaded
+  await expect(loggedInPage).toHaveURL(/inventory.html/);
+  await expect(loggedInPage.getByText('Products')).toBeVisible();
 
-  await expect(page).toHaveURL(/inventory.html/);
-  await expect(page.getByText('Products')).toBeVisible();
-  expect(await inventoryPage.getInventoryItemsCount()).toBeGreaterThan(0);
-  await expect(inventoryPage.productTitles.first()).toBeVisible();
+  const titles = await inventoryPage.getProductTitles();
+  expect(titles).toContain(product1);
+  expect(titles).toContain(product2);
 
-  expect(await inventoryPage.productTitles.allTextContents()).toContain(productName1);
-  expect(await inventoryPage.productTitles.allTextContents()).toContain(productName2);
+  // Add items to cart
+  await inventoryPage.addProductToCartByName(product1);
+  await inventoryPage.addProductToCartByName(product2);
+  await expect(inventoryPage.shoppingCartBadge).toHaveText('2');
 
-  inventoryPage.addPoductToCartByName(productName1);
-  inventoryPage.addPoductToCartByName(productName2);
-  
-  await expect(cartPage.shoppingCartBadge).toBeVisible();
-  expect(cartPage.shoppingCartBadge).toHaveText
+  // --- Cart ---
+  await inventoryPage.openCart();
+  const cartPage = new CartPage(loggedInPage); // instantiate directly in test
+  await cartPage.assertCartPageOpened();
 
-  await cartPage.goToCart();
-  await expect(page).toHaveURL(/cart.html/);
-  await expect(page.getByText('Your Cart')).toBeVisible();
+  expect(await cartPage.getCartItemsCount()).toBe(2);
+  await cartPage.assertCartContainsProducts([product1, product2]);
 
-  const cartItems = cartPage.getItems();
-  expect(await cartItems).toHaveCount(2);
-  expect(await cartItems).toContainText([productName1, productName2]);
-  cartPage.removeProductFromCartByName(productName2)
-  expect(await cartItems).toHaveCount(1);
-  expect(await cartItems).toContainText([productName1]);
-  await expect(cartPage.shoppingCartBadge).toHaveText('1');
+  await cartPage.removeProductFromCartByName(product2);
+  expect(await cartPage.getCartItemsCount()).toBe(1);
+  await cartPage.assertCartContainsProducts([product1]);
 
+  // --- Checkout ---
+  const checkoutPage = new CheckoutPage(loggedInPage); // instantiate in test, no fixture
   await checkoutPage.navigate();
-  await expect(page).toHaveURL(/checkout-step-one.html/);
-  await expect(page.getByText('Checkout: Your Information')).toBeVisible();
-
   await checkoutPage.fillCheckoutInformation('John', 'Doe', '12345');
-  await checkoutPage.clickContinue();
+  await checkoutPage.continueToOverview();
 
-  await expect(page).toHaveURL(/checkout-step-two.html/);
-  await expect(page.getByText('Checkout: Overview')).toBeVisible();
-
-  const overviewItems = checkoutPage.getItems();
-  expect(await overviewItems).toHaveCount(1);
-  expect(await overviewItems).toContainText([productName1]);
+  await checkoutPage.assertOverviewItems([product1]);
 
   await checkoutPage.clickFinish();
-  await expect(page).toHaveURL(/checkout-complete.html/);
-  await expect(page.getByText('Checkout: Complete!')).toBeVisible();
-  await expect(page.getByText('THANK YOU FOR YOUR ORDER')).toBeVisible();
-
+  await checkoutPage.assertCheckoutComplete();
 });
-
-

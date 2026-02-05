@@ -1,32 +1,61 @@
-import { type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
+
 export default class CartPage {
 
-
     readonly page: Page;
-
     readonly shoppingCartBadge: Locator;
-    readonly inventoryItems: Locator;
+    readonly cartItems: Locator;
 
     constructor(page: Page) {
         this.page = page;
         this.shoppingCartBadge = page.locator('.shopping_cart_badge');
-        this.inventoryItems = page.locator('.cart_item');
+        this.cartItems = page.locator('.cart_item');
     }
+
     async navigate() {
         await this.page.goto('https://www.saucedemo.com/cart.html');
     }
 
-    async goToCart() {
-        await this.shoppingCartBadge.click();
-    }    
-    
-    async getItems(): Promise<Locator> {
-      return this.page.getByTestId('inventory-item');
-    }
-    removeProductFromCartByName = async (productName: string) => {
-      const productLocator = this.inventoryItems.filter({ hasText: productName });
-      const removeButton = productLocator.getByRole('button', { name: 'Remove' });
-      await removeButton.click();
+    async assertCartPageOpened() {
+        await expect(this.page).toHaveURL(/cart.html/);
+        await expect(this.page.getByText('Your Cart')).toBeVisible();
     }
 
+    getCartItems(): Locator {
+        return this.cartItems;
+    }
+
+    async getCartItemsCount(): Promise<number> {
+        return this.cartItems.count();
+    }
+
+    getFirstCartItem(): Locator {
+        return this.cartItems.first();
+    }
+
+    cartItemByName(productName: string): Locator {
+        return this.cartItems.filter({ hasText: productName });
+    }
+
+    async assertCartContainsProducts(productNames: string[]) {
+        await expect(this.cartItems).toHaveCount(productNames.length);
+        await expect(this.cartItems).toContainText(productNames);
+    }
+
+
+    async removeProductFromCartByName(productName: string) {
+        const product = this.cartItemByName(productName);
+        await product.getByRole('button', { name: 'Remove' }).click();
+    }
+
+    async removeFirstCartItem() {
+        await this.getFirstCartItem()
+            .getByRole('button', { name: 'Remove' })
+            .click();
+    }
+
+    async assertCartIsEmpty() {
+        await expect(this.cartItems).toHaveCount(0);
+        await expect(this.shoppingCartBadge).toBeHidden();
+    }
 }

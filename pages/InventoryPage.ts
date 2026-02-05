@@ -1,49 +1,61 @@
-import { type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
+import CartPage from './CartPage';
+
 export default class InventoryPage {
-
-
-
-
-    readonly productTitles: Locator;
+    readonly page: Page;
     readonly inventoryItems: Locator;
+    readonly productTitles: Locator;
     readonly shoppingCartBadge: Locator;
+    readonly shoppingCartLink: Locator;
 
     constructor(page: Page) {
-        this.productTitles = page.locator('.inventory_item_name');
+        this.page = page;
         this.inventoryItems = page.locator('.inventory_item');
-        this.shoppingCartBadge = page.getByTestId('shopping-cart-badge'); 
+        this.productTitles = page.locator('.inventory_item_name');
+        this.shoppingCartBadge = page.getByTestId('shopping-cart-badge');
+        this.shoppingCartLink = page.getByTestId('shopping-cart-link');
     }
 
+    async assertInventoryPageOpened() {
+        await expect(this.page).toHaveURL(/.*inventory.html/);
+        await expect(this.page.getByText('Products')).toBeVisible();
+    }
 
     async getInventoryItemsCount(): Promise<number> {
-        return this.productTitles.count();
+        return this.inventoryItems.count();
     }
 
     async getProductTitles(): Promise<string[]> {
         return this.productTitles.allTextContents();
     }
 
-    async getInventoryItems(): Promise<Locator> {
-        return this.inventoryItems;
+    async addProductToCartByName(productName: string) {
+        const productCard = this.getProductCardByName(productName);
+        await productCard.getByRole('button', { name: 'Add to cart' }).click();
     }
 
-    addPoductToCartByName = async (productName: string) => {
-        const productCardLocator = await this.getProductCardByName(productName);
-        const addToCartButton = productCardLocator.getByRole('button', { name: 'Add to cart' });
-        await addToCartButton.click();
+    async addFirstItemToCart() {
+        await this.inventoryItems
+            .first()
+            .getByRole('button', { name: 'Add to cart' })
+            .click();
     }
+
     async removeProductFromCartByName(productName: string) {
-        const productCardLocator = await this.getProductCardByName(productName);
-        const removeButton = productCardLocator.getByRole('button', { name: 'Remove' });
-        await removeButton.click();
+        const productCard = this.getProductCardByName(productName);
+        await productCard.getByRole('button', { name: 'Remove' }).click();
     }
 
-    async getProductByName(productName: string): Promise<Locator> {
+    getProductByName(productName: string): Locator {
         return this.productTitles.filter({ hasText: productName });
     }
 
-    async getProductCardByName(productName: string): Promise<Locator> {
+    getProductCardByName(productName: string): Locator {
         return this.inventoryItems.filter({ hasText: productName });
     }
 
+    async openCart(): Promise<CartPage> {
+        await this.shoppingCartLink.click();
+        return new CartPage(this.page);
+    }
 }
