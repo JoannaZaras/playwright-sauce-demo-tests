@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 export default class LoginPage {
 
@@ -6,6 +6,7 @@ export default class LoginPage {
     readonly passwordInput: Locator;
     readonly loginButton: Locator;
     readonly page: Page;
+    readonly errorMessage: Locator;
 
 
     constructor(page: Page) {
@@ -13,6 +14,7 @@ export default class LoginPage {
         this.usernameInput = page.getByPlaceholder('Username');
         this.passwordInput = page.getByPlaceholder('Password');
         this.loginButton = page.getByRole('button', { name: 'Login' });
+        this.errorMessage = page.getByTestId('error');
     }
 
     async navigate() {
@@ -23,5 +25,10 @@ export default class LoginPage {
         await this.usernameInput.fill(username);
         await this.passwordInput.fill(password);
         await this.loginButton.click();
+    }
+
+   async assertErrorMessage(messageFragment: string) {
+        await expect(this.errorMessage).toBeVisible();
+        await expect(this.errorMessage).toContainText(messageFragment);
     }
 }

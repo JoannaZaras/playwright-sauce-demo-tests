@@ -18,7 +18,7 @@ export default class InventoryPage {
 
     async assertInventoryPageOpened() {
         await expect(this.page).toHaveURL(/.*inventory.html/);
-        await expect(this.page.getByText('Products')).toBeVisible();
+        await expect(this.page.getByText('Products').first()).toBeVisible();
     }
 
     async getInventoryItemsCount(): Promise<number> {

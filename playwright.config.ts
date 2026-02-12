@@ -14,7 +14,7 @@ export default defineConfig({
   ],
   use: {
     testIdAttribute: 'data-test',
-    headless: false,              // run in headed mode for easier debug
+    headless: true,              // run in headless mode
     viewport: { width: 1280, height: 720 },
     ignoreHTTPSErrors: true,
     screenshot: 'only-on-failure', // capture screenshots only on failure
