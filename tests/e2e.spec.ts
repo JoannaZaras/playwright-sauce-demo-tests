@@ -1,7 +1,5 @@
 import { test, expect } from '../fixtures/auth';
 import InventoryPage from '../pages/InventoryPage';
-import CartPage from '../pages/CartPage';
-import CheckoutPage from '../pages/CheckoutPage';
 
 test('happy path E2E', async ({ loggedInPage }) => {
   const product1 = 'Sauce Labs Fleece Jacket';
@@ -24,10 +22,7 @@ test('happy path E2E', async ({ loggedInPage }) => {
   await expect(inventoryPage.shoppingCartBadge).toHaveText('2');
 
   // --- Cart ---
-  await inventoryPage.openCart();
-  const cartPage = new CartPage(loggedInPage); // instantiate directly in test
-  await cartPage.assertCartPageOpened();
-
+  const cartPage = await inventoryPage.openCart();
   expect(await cartPage.getCartItemsCount()).toBe(2);
   await cartPage.assertCartContainsProducts([product1, product2]);
 
@@ -36,7 +31,10 @@ test('happy path E2E', async ({ loggedInPage }) => {
   await cartPage.assertCartContainsProducts([product1]);
 
   // --- Checkout ---
-  const checkoutPage = new CheckoutPage(loggedInPage); // instantiate in test, no fixture
+ const checkoutPage = await cartPage.clickCheckout();
+
+
+  // instantiate in test, no fixture
   await checkoutPage.navigate();
   await checkoutPage.fillCheckoutInformation('John', 'Doe', '12345');
   await checkoutPage.continueToOverview();

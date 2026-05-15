@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "Playwright TS tests of Sauce Labs ecommerce page",
   "main": "index.js",
-  "scripts": {
-    "test": "playwright test"
-  },
+ "scripts": {
+  "test": "playwright test",
+  "test:headed": "playwright test --headed",
+  "report": "playwright show-report",
+  "codegen": "playwright codegen https://www.saucedemo.com"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JoannaZaras/playwright-sauce-demo-tests.git"
@@ -19,7 +22,7 @@
   },
   "homepage": "https://github.com/JoannaZaras/playwright-sauce-demo-tests#readme",
   "devDependencies": {
-    "@playwright/test": "^1.58.0",
+    "@playwright/test": "^1.59.1",
     "playwright": "^1.58.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"

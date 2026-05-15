@@ -15,14 +15,10 @@ export default class CheckoutPage {
     this.checkoutItems = page.getByTestId('inventory-item');
   }
 
-  // -------- Navigation --------
-
   async navigate() {
     await this.page.goto('https://www.saucedemo.com/checkout-step-one.html');
     await expect(this.page.getByText('Checkout: Your Information')).toBeVisible();
   }
-
-  // -------- Step One --------
 
   async fillCheckoutInformation(
     firstName: string,

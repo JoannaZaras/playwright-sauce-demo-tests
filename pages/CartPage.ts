@@ -1,20 +1,27 @@
 import { expect, type Locator, type Page } from '@playwright/test';
+import CheckoutPage from './CheckoutPage';
 
 export default class CartPage {
 
     readonly page: Page;
     readonly shoppingCartBadge: Locator;
     readonly cartItems: Locator;
+    readonly checkoutButton: Locator;
 
     constructor(page: Page) {
         this.page = page;
         this.shoppingCartBadge = page.locator('.shopping_cart_badge');
         this.cartItems = page.locator('.cart_item');
+        this.checkoutButton = page.getByRole('button', { name: 'Checkout' });
     }
 
     async navigate() {
-        await this.page.goto('https://www.saucedemo.com/cart.html');
+        await this.page.goto('/cart.html');
     }
+    async clickCheckout(): Promise<CheckoutPage> {
+  await this.checkoutButton.click();
+  return new CheckoutPage(this.page);
+} 
 
     async assertCartPageOpened() {
         await expect(this.page).toHaveURL(/cart.html/);

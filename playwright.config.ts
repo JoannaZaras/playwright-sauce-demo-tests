@@ -13,6 +13,7 @@ export default defineConfig({
     ['html', { open: 'never' }], // HTML report, won't auto-open
   ],
   use: {
+    baseURL: 'https://www.saucedemo.com',
     testIdAttribute: 'data-test',
     headless: true,              // run in headless mode
     viewport: { width: 1280, height: 720 },
